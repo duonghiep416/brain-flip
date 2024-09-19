@@ -1,14 +1,13 @@
 import {
   IsEmail,
   IsEnum,
-  IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Length,
-  Matches,
-  MinLength,
 } from 'class-validator';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { IsPassword } from 'src/common/validators/password.validators';
 
 export class CreateUserDto {
   @IsString()
@@ -18,23 +17,13 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  @IsOptional()
   @IsEnum(Object.keys(UserRole).map((key) => UserRole[key]), {
     message: 'role must be an enum value',
   })
   @IsNumber()
   role: UserRole.ADMIN | UserRole.USER | UserRole.GUEST;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  @Matches(/(?=.*[a-z])/, {
-    message: 'Password must contain at least one lowercase letter',
-  })
-  @Matches(/(?=.*[A-Z])/, {
-    message: 'Password must contain at least one uppercase letter',
-  })
-  @Matches(/(?=.*\d)/, {
-    message: 'Password must contain at least one number',
-  })
+  @IsPassword()
   password: string;
 }

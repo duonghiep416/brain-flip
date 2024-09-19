@@ -9,6 +9,8 @@ import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { DatabaseErrorCodes } from 'src/config/database-error.config';
 import { PasswordService } from 'src/shared/services/password.service';
+import { plainToClass } from 'class-transformer';
+import { omit } from 'lodash';
 @Injectable()
 export class UserService {
   constructor(
@@ -18,11 +20,10 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      createUserDto.password = await PasswordService.hashPassword(
-        createUserDto.password,
-      );
-      const user = this.usersRepository.create(createUserDto);
-      return await this.usersRepository.save(user);
+      const user = plainToClass(User, createUserDto);
+      user.password = await PasswordService.hashPassword(user.password);
+      const savedUser = await this.usersRepository.save(user);
+      return omit(savedUser, 'password');
     } catch (error) {
       console.error('error', error);
       if (error.code === DatabaseErrorCodes.UNIQUE_VIOLATION) {
