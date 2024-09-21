@@ -7,10 +7,12 @@ import { TokenService } from 'src/shared/services/token.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
+import { BlacklistToken } from 'src/blacklist_token/entities/blacklist_token.entity';
+import { BlacklistTokenService } from 'src/blacklist_token/blacklist_token.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, BlacklistToken]),
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -24,7 +26,7 @@ import { UserService } from 'src/user/user.service';
       }),
     }),
   ],
-  providers: [AuthService, TokenService, UserService],
+  providers: [AuthService, TokenService, UserService, BlacklistTokenService],
   controllers: [AuthController],
 })
 export class AuthModule {}
