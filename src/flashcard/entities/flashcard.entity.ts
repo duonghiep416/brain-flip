@@ -1,10 +1,12 @@
 import { IsNotEmpty } from 'class-validator';
+import { FlashcardBookmark } from 'src/flashcard_bookmark/entities/flashcard_bookmark.entity';
 import { FlashcardSet } from 'src/flashcard_set/entities/flashcard_set.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -34,4 +36,10 @@ export class Flashcard {
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updated_at: Date;
+
+  @OneToMany(
+    () => FlashcardBookmark,
+    (flashcardBookmark) => flashcardBookmark.flashcard,
+  )
+  bookmarks: FlashcardBookmark[];
 }

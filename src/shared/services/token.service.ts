@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt'; // Import TokenExpiredError để kiểm tra lỗi hết hạn
+import { Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
@@ -65,5 +66,13 @@ export class TokenService {
   // Decode Refresh Token
   decodeRefreshToken(token: string) {
     return this.jwtService.decode(token);
+  }
+
+  getDataFromToken(req: Request) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) throw new Error();
+    const token = authHeader.split(' ')[1];
+    const data = this.decodeAccessToken(token);
+    return data;
   }
 }

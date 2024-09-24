@@ -1,5 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { Flashcard } from 'src/flashcard/entities/flashcard.entity';
+import { FlashcardSetPermission } from 'src/flashcard_set_permission/entities/flashcard_set_permission.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -45,4 +46,10 @@ export class FlashcardSet {
 
   @OneToMany(() => Flashcard, (flashcard) => flashcard.flashcard_sets)
   flashcards: Flashcard[];
+
+  @OneToMany(
+    () => FlashcardSetPermission,
+    (permission) => permission.flashcard_set,
+  )
+  permissions: FlashcardSetPermission[];
 }

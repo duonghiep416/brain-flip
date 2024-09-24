@@ -13,6 +13,8 @@ import { TokenService } from 'src/shared/services/token.service';
 import { JwtService } from '@nestjs/jwt';
 import { FlashcardSetModule } from './flashcard_set/flashcard_set.module';
 import { FlashcardModule } from './flashcard/flashcard.module';
+import { FlashcardBookmarkModule } from './flashcard_bookmark/flashcard_bookmark.module';
+import { FlashcardSetPermissionModule } from './flashcard_set_permission/flashcard_set_permission.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { FlashcardModule } from './flashcard/flashcard.module';
     BlacklistTokenModule,
     FlashcardSetModule,
     FlashcardModule,
+    FlashcardBookmarkModule,
+    FlashcardSetPermissionModule,
   ],
   controllers: [AppController],
   providers: [AppService, TokenService, JwtService],

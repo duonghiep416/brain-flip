@@ -1,5 +1,8 @@
+import { permission } from 'process';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { FlashcardBookmark } from 'src/flashcard_bookmark/entities/flashcard_bookmark.entity';
 import { FlashcardSet } from 'src/flashcard_set/entities/flashcard_set.entity';
+import { FlashcardSetPermission } from 'src/flashcard_set_permission/entities/flashcard_set_permission.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
@@ -11,6 +14,9 @@ export class User {
 
   @Column({ unique: true })
   username: string;
+
+  @Column({ nullable: true })
+  name: string;
 
   @Column({ unique: true })
   email: string;
@@ -32,4 +38,13 @@ export class User {
 
   @OneToMany(() => FlashcardSet, (flashcardSet) => flashcardSet.user)
   flashcard_sets: FlashcardSet[];
+
+  @OneToMany(
+    () => FlashcardBookmark,
+    (flashcardBookmark) => flashcardBookmark.user,
+  )
+  bookmarks: FlashcardBookmark[];
+
+  @OneToMany(() => FlashcardSetPermission, (permission) => permission.user)
+  permissions: FlashcardSetPermission[];
 }
