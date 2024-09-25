@@ -11,7 +11,9 @@ describe('FlashcardSetPermissionController', () => {
       providers: [FlashcardSetPermissionService],
     }).compile();
 
-    controller = module.get<FlashcardSetPermissionController>(FlashcardSetPermissionController);
+    controller = module.get<FlashcardSetPermissionController>(
+      FlashcardSetPermissionController,
+    );
   });
 
   it('should be defined', () => {

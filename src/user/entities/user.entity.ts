@@ -1,4 +1,3 @@
-import { permission } from 'process';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { FlashcardBookmark } from 'src/flashcard_bookmark/entities/flashcard_bookmark.entity';
 import { FlashcardSet } from 'src/flashcard_set/entities/flashcard_set.entity';

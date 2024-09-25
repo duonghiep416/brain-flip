@@ -8,10 +8,16 @@ import { TokenService } from 'src/shared/services/token.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { User } from 'src/user/entities/user.entity';
+import { FlashcardSetPermission } from 'src/flashcard_set_permission/entities/flashcard_set_permission.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FlashcardSet, Flashcard, User]),
+    TypeOrmModule.forFeature([
+      FlashcardSet,
+      Flashcard,
+      User,
+      FlashcardSetPermission,
+    ]),
     ConfigModule,
   ],
   controllers: [FlashcardSetController],

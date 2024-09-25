@@ -16,6 +16,8 @@ import { UpdateFlashcardSetDto } from 'src/flashcard_set/dto/update-flashcard_se
 import { CreateFlashcardSetDto } from 'src/flashcard_set/dto/create-flashcard_set.dto';
 import { PasswordService } from 'src/shared/services/password.service';
 import { _ } from 'lodash';
+import { UpdateFlashcardSetRoleDto } from 'src/flashcard_set/dto/update-flashcard-role.dto';
+import { FlashcardSetPermission } from 'src/flashcard_set_permission/entities/flashcard_set_permission.entity';
 @Injectable()
 export class FlashcardSetService {
   constructor(
@@ -26,6 +28,9 @@ export class FlashcardSetService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly tokenService: TokenService,
+
+    @InjectRepository(FlashcardSetPermission)
+    private readonly flashcardSetPermissionRepository: Repository<FlashcardSetPermission>,
   ) {}
 
   async create(createFlashcardSetDto: CreateFlashcardSetDto, req: Request) {
@@ -159,18 +164,25 @@ export class FlashcardSetService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, req: Request) {
+    const { sub: currentUserId } = this.tokenService.getDataFromToken(req);
     // id là UUID
     if (!isUUID(id)) {
-      throw new NotFoundException('Flashcard set not found');
+      return new NotFoundException('Flashcard set not found');
     }
     try {
       const flashcardSet = await this.flashcardSetRepository.findOne({
         where: { id },
-        relations: ['flashcards'],
+        relations: ['flashcards', 'user'],
       });
+      if (currentUserId !== flashcardSet.user.id && flashcardSet.is_private) {
+        return new ForbiddenException(
+          'You do not have permission to view this flashcard set',
+        );
+      }
       _.set(flashcardSet, 'password', flashcardSet?.password ? true : false);
-      return flashcardSet;
+
+      return _.omit(flashcardSet, ['user']);
     } catch (error) {
       console.error('error', error);
     }
@@ -186,9 +198,8 @@ export class FlashcardSetService {
     // Fetch the FlashcardSet by ID including its user and flashcards
     const flashcardSet = await this.flashcardSetRepository.findOne({
       where: { id },
-      relations: ['user', 'flashcards'], // Include flashcards in the relation
+      relations: ['user', 'flashcards', 'permissions'], // Include flashcards in the relation
     });
-
     if (!flashcardSet) {
       throw new NotFoundException('Flashcard set not found');
     }
@@ -220,7 +231,6 @@ export class FlashcardSetService {
       updateFlashcardSetDto.flashcards &&
       updateFlashcardSetDto.flashcards.length > 0
     ) {
-      console.log('flashcardSet', flashcardSet);
       // Save the updated FlashcardSet entity
       const savedFlashcardSet =
         await this.flashcardSetRepository.save(updatedFlashcardSet);
@@ -234,6 +244,9 @@ export class FlashcardSetService {
 
       // Save the new flashcards to the repository
       updatedFlashcards = await this.flashcardRepository.save(flashcards);
+    } else {
+      // Save the updated FlashcardSet entity
+      await this.flashcardSetRepository.save(updatedFlashcardSet);
     }
 
     return {
@@ -242,6 +255,64 @@ export class FlashcardSetService {
         omit(flashcard, ['flashcard_sets']),
       ),
     };
+  }
+
+  async updateRole(
+    id: string,
+    updateFlashcardSetRoleDto: UpdateFlashcardSetRoleDto,
+    req: Request,
+  ) {
+    const { sub: currentUserId } = this.tokenService.getDataFromToken(req);
+
+    try {
+      // Check if the flashcardSet exists
+      const flashcardSet = await this.flashcardSetRepository.findOne({
+        where: { id },
+        relations: ['user'],
+      });
+
+      if (!flashcardSet) {
+        return new NotFoundException('Flashcard set not found');
+      }
+
+      // Ensure the current user has permission to update the role
+      if (flashcardSet.user.id !== currentUserId) {
+        return new ForbiddenException(
+          'You do not have permission to update this flashcard set role',
+        );
+      }
+
+      // Find the flashcard set role for the given user
+      let flashcardSetRole =
+        await this.flashcardSetPermissionRepository.findOne({
+          where: {
+            flashcard_set_id: id,
+            user_id: updateFlashcardSetRoleDto.user_id,
+          },
+        });
+
+      if (!flashcardSetRole) {
+        // If the role does not exist, create a new permission
+        flashcardSetRole = this.flashcardSetPermissionRepository.create({
+          user_id: updateFlashcardSetRoleDto.user_id,
+          flashcard_set_id: id,
+          permission_type: updateFlashcardSetRoleDto.role,
+        });
+      } else {
+        // If the role exists, update the permission type
+        flashcardSetRole.permission_type = updateFlashcardSetRoleDto.role;
+      }
+
+      // Save the new or updated flashcard set role
+      await this.flashcardSetPermissionRepository.save(flashcardSetRole);
+
+      return {
+        message: 'Flashcard set role successfully updated',
+      };
+    } catch (error) {
+      console.error('Error updating flashcard set role', error);
+      return new Error('Failed to update flashcard set role');
+    }
   }
 
   async remove(id: string, req: Request) {

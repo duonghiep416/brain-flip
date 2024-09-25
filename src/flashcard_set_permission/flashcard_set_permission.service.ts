@@ -16,7 +16,10 @@ export class FlashcardSetPermissionService {
     return `This action returns a #${id} flashcardSetPermission`;
   }
 
-  update(id: number, updateFlashcardSetPermissionDto: UpdateFlashcardSetPermissionDto) {
+  update(
+    id: number,
+    updateFlashcardSetPermissionDto: UpdateFlashcardSetPermissionDto,
+  ) {
     return `This action updates a #${id} flashcardSetPermission`;
   }
 
