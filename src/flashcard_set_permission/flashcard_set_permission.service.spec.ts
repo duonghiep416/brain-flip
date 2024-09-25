@@ -9,7 +9,9 @@ describe('FlashcardSetPermissionService', () => {
       providers: [FlashcardSetPermissionService],
     }).compile();
 
-    service = module.get<FlashcardSetPermissionService>(FlashcardSetPermissionService);
+    service = module.get<FlashcardSetPermissionService>(
+      FlashcardSetPermissionService,
+    );
   });
 
   it('should be defined', () => {

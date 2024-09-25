@@ -8,11 +8,13 @@ import {
   Delete,
   Req,
   Query,
+  Put,
 } from '@nestjs/common';
 import { FlashcardSetService } from './flashcard_set.service';
 import { CreateFlashcardSetDto } from './dto/create-flashcard_set.dto';
 import { UpdateFlashcardSetDto } from './dto/update-flashcard_set.dto';
 import { Request } from 'express';
+import { UpdateFlashcardSetRoleDto } from 'src/flashcard_set/dto/update-flashcard-role.dto';
 
 @Controller('flashcard-sets')
 export class FlashcardSetController {
@@ -32,8 +34,8 @@ export class FlashcardSetController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.flashcardSetService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.flashcardSetService.findOne(id, req);
   }
 
   @Patch(':id')
@@ -43,6 +45,19 @@ export class FlashcardSetController {
     @Req() req: Request,
   ) {
     return this.flashcardSetService.update(id, updateFlashcardSetDto, req);
+  }
+
+  @Put('role/:id')
+  updateRole(
+    @Param('id') id: string,
+    @Body() updateFlashcardSetRoleDto: UpdateFlashcardSetRoleDto,
+    @Req() req: Request,
+  ) {
+    return this.flashcardSetService.updateRole(
+      id,
+      updateFlashcardSetRoleDto,
+      req,
+    );
   }
 
   @Delete(':id')
