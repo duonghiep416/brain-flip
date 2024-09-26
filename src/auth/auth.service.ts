@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { RefreshTokenDto } from 'src/auth/dto/refresh-token.dto';
@@ -23,10 +27,15 @@ export class AuthService {
   ) {}
 
   async login(loginDto: LoginDto) {
+    console.log('loginDto', loginDto);
     const { email, password } = loginDto;
     const user = await this.usersRepository.findOne({
       where: { email }, // Tìm user theo email
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     user.last_login = new Date();
     await this.usersRepository.save(user);

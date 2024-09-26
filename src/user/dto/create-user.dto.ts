@@ -1,6 +1,7 @@
 import {
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -16,6 +17,10 @@ export class CreateUserDto {
 
   @IsEmail()
   email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
   @IsOptional()
   @IsEnum(Object.keys(UserRole).map((key) => UserRole[key]), {
