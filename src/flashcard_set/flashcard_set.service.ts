@@ -18,6 +18,7 @@ import { PasswordService } from 'src/shared/services/password.service';
 import { _ } from 'lodash';
 import { UpdateFlashcardSetRoleDto } from 'src/flashcard_set/dto/update-flashcard-role.dto';
 import { FlashcardSetPermission } from 'src/flashcard_set_permission/entities/flashcard_set_permission.entity';
+import { FlashcardSetRole } from 'src/common/enums/flashcard-set-role.enum';
 @Injectable()
 export class FlashcardSetService {
   constructor(
@@ -195,17 +196,35 @@ export class FlashcardSetService {
   ) {
     const { sub: currentUserId } = this.tokenService.getDataFromToken(req);
     let updatedFlashcards = [];
-    // Fetch the FlashcardSet by ID including its user and flashcards
-    const flashcardSet = await this.flashcardSetRepository.findOne({
-      where: { id },
-      relations: ['user', 'flashcards', 'permissions'], // Include flashcards in the relation
-    });
+
+    // Fetch the FlashcardSet with the permission filtered by the current user using QueryBuilder
+    const flashcardSet = await this.flashcardSetRepository
+      .createQueryBuilder('flashcardSet')
+      .leftJoinAndSelect('flashcardSet.user', 'user')
+      .leftJoinAndSelect(
+        'flashcardSet.permissions',
+        'permissions',
+        'permissions.user_id = :currentUserId',
+        { currentUserId },
+      )
+      .leftJoinAndSelect('flashcardSet.flashcards', 'flashcards')
+      .where('flashcardSet.id = :id', { id })
+      .getOne();
+
     if (!flashcardSet) {
       throw new NotFoundException('Flashcard set not found');
     }
 
-    // Check if the current user is the owner of the flashcard set
-    if (flashcardSet.user.id !== currentUserId) {
+    // Extract the user's permission
+    const userPermission = flashcardSet.permissions?.[0]; // Should only be one result due to the filtered join
+
+    // Check if the current user is the owner or has the appropriate permission to update
+    const isOwner = flashcardSet.user.id === currentUserId;
+    const hasPermissionToUpdate =
+      userPermission &&
+      userPermission.permission_type === FlashcardSetRole.EDITOR; // Or another edit-level permission
+
+    if (!isOwner && !hasPermissionToUpdate) {
       throw new ForbiddenException(
         'You do not have permission to update this flashcard set',
       );
@@ -223,9 +242,12 @@ export class FlashcardSetService {
       flashcardSet,
       updateFlashcardSetDto,
     );
-    if (updateFlashcardSetDto?.flashcards !== undefined)
+
+    if (updateFlashcardSetDto?.flashcards !== undefined) {
       // Ensure old flashcards are deleted
       await this.flashcardRepository.delete({ flashcard_sets: flashcardSet });
+    }
+
     // Handle updating flashcards if provided
     if (
       updateFlashcardSetDto.flashcards &&
@@ -250,7 +272,8 @@ export class FlashcardSetService {
     }
 
     return {
-      ...omit(updatedFlashcardSet, ['password', 'user']),
+      permissions: userPermission.permission_type,
+      ...omit(updatedFlashcardSet, ['password', 'user', 'permissions']),
       flashcards: updatedFlashcards.map((flashcard) =>
         omit(flashcard, ['flashcard_sets']),
       ),
