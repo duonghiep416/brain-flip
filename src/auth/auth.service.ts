@@ -27,7 +27,6 @@ export class AuthService {
   ) {}
 
   async login(loginDto: LoginDto) {
-    console.log('loginDto', loginDto);
     const { email, password } = loginDto;
     const user = await this.usersRepository.findOne({
       where: { email }, // Tìm user theo email
