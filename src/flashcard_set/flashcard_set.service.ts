@@ -174,13 +174,30 @@ export class FlashcardSetService {
     try {
       const flashcardSet = await this.flashcardSetRepository.findOne({
         where: { id },
-        relations: ['flashcards', 'user'],
+        relations: ['flashcards', 'user', 'flashcards.bookmarks'],
       });
+
+      if (!flashcardSet) {
+        return new NotFoundException('Not Found');
+      }
+
       if (currentUserId !== flashcardSet.user.id && flashcardSet.is_private) {
         return new ForbiddenException(
           'You do not have permission to view this flashcard set',
         );
       }
+      // Xử lý flashcards: Đặt `bookmarks` là `true` hoặc `false` dựa trên độ dài của mảng bookmarks
+      const updatedFlashcards = _.map(flashcardSet.flashcards, (flashcard) => {
+        return {
+          ...flashcard,
+          bookmarks: flashcard.bookmarks.length > 0,
+        };
+      });
+
+      // Cập nhật flashcardSet với flashcards mới đã xử lý
+      _.set(flashcardSet, 'flashcards', updatedFlashcards);
+
+      // Xử lý nếu flashcard set có mật khẩu
       _.set(flashcardSet, 'password', flashcardSet?.password ? true : false);
 
       return _.omit(flashcardSet, ['user']);
@@ -272,7 +289,7 @@ export class FlashcardSetService {
     }
 
     return {
-      permissions: userPermission.permission_type,
+      permissions: userPermission?.permission_type || null,
       ...omit(updatedFlashcardSet, ['password', 'user', 'permissions']),
       flashcards: updatedFlashcards.map((flashcard) =>
         omit(flashcard, ['flashcard_sets']),
