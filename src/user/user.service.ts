@@ -11,11 +11,14 @@ import { DatabaseErrorCodes } from 'src/config/database-error.config';
 import { PasswordService } from 'src/shared/services/password.service';
 import { plainToClass } from 'class-transformer';
 import { omit } from 'lodash';
+import { TokenService } from 'src/shared/services/token.service';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+
+    private readonly tokenService: TokenService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -42,5 +45,18 @@ export class UserService {
     }
 
     return { message: `User successfully deleted` };
+  }
+
+  async getDetailUser(id: string) {
+    try {
+      const result = await this.usersRepository.findOne({
+        where: {
+          id,
+        },
+      });
+      return omit(result, 'password');
+    } catch (error) {
+      console.error('error', error);
+    }
   }
 }
