@@ -7,13 +7,9 @@ import { Flashcard } from 'src/flashcard/entities/flashcard.entity';
 import { User } from 'src/user/entities/user.entity';
 import { TokenService } from 'src/shared/services/token.service';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([FlashcardBookmark, User, Flashcard]),
-    ConfigModule,
-  ],
+  imports: [TypeOrmModule.forFeature([FlashcardBookmark, User, Flashcard])],
   controllers: [FlashcardBookmarkController],
   providers: [FlashcardBookmarkService, TokenService, JwtService],
 })

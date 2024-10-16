@@ -19,7 +19,9 @@ import { FlashcardSetPermissionModule } from './flashcard_set_permission/flashca
 @Module({
   imports: [
     TypeOrmModule.forFeature([BlacklistToken]),
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

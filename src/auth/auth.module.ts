@@ -4,7 +4,7 @@ import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { TokenService } from 'src/shared/services/token.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { BlacklistToken } from 'src/blacklist_token/entities/blacklist_token.entity';
@@ -13,9 +13,8 @@ import { BlacklistTokenService } from 'src/blacklist_token/blacklist_token.servi
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, BlacklistToken]),
-    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [],
       inject: [ConfigService],
       // Đăng ký JwtModule để cung cấp JwtService
       useFactory: async (configService: ConfigService) => ({
