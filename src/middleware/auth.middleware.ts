@@ -18,9 +18,7 @@ export class AuthMiddleWare implements NestMiddleware {
     private readonly tokenService: TokenService,
   ) {}
   async use(req: Request, res: Response, next: () => void) {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException();
-    const token = authHeader.split(' ')[1];
+    const token = this.tokenService.getAccessToken(req);
     const blacklistToken = await this.blacklistRepository.findOne({
       where: { token, type: TokenType.ACCESS },
     });

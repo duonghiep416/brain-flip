@@ -1,5 +1,5 @@
 // src/auth/token.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt'; // Import TokenExpiredError để kiểm tra lỗi hết hạn
 import { Request } from 'express';
@@ -13,21 +13,27 @@ export class TokenService {
   ) {}
 
   // Tạo Access Token
-  generateAccessToken(user: User): string {
+  generateAccessToken(user: User): { value: string; expiresIn: string } {
     const payload = { email: user.email, sub: user.id };
-    return this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_SECRET'), // Sử dụng secret cho access token
-      expiresIn: this.configService.get('JWT_SECRET_EXPIRES_IN'), // Thời gian hết hạn của access token
-    });
+    return {
+      value: this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_SECRET_EXPIRES_IN'),
+      }),
+      expiresIn: this.configService.get('JWT_SECRET_EXPIRES_IN'),
+    };
   }
 
   // Tạo Refresh Token
-  generateRefreshToken(user: User): string {
+  generateRefreshToken(user: User): { value: string; expiresIn: string } {
     const payload = { email: user.email, sub: user.id };
-    return this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_REFRESH_SECRET'), // Sử dụng secret khác cho refresh token
-      expiresIn: this.configService.get('JWT_REFRESH_SECRET_EXPIRES_IN'), // Thời gian hết hạn của refresh token
-    });
+    return {
+      value: this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'), // Sử dụng secret khác cho refresh token
+        expiresIn: this.configService.get('JWT_REFRESH_SECRET_EXPIRES_IN'), // Thời gian hết hạn của refresh token
+      }),
+      expiresIn: this.configService.get('JWT_REFRESH_SECRET_EXPIRES_IN'),
+    };
   }
 
   // Verify Access Token với xử lý trả về false nếu hết hạn hoặc không hợp lệ
@@ -70,9 +76,16 @@ export class TokenService {
 
   getDataFromToken(req: Request) {
     const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new Error();
+    if (!authHeader) throw new UnauthorizedException();
     const token = authHeader.split(' ')[1];
     const data = this.decodeAccessToken(token);
     return data;
+  }
+
+  getAccessToken(req: Request) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) throw new UnauthorizedException();
+    const token = authHeader.split(' ')[1];
+    return token;
   }
 }

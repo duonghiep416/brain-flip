@@ -50,7 +50,6 @@ export class AuthService {
 
     const accessToken = this.tokenService.generateAccessToken(user);
     const refreshToken = this.tokenService.generateRefreshToken(user);
-
     return {
       accessToken,
       refreshToken,
