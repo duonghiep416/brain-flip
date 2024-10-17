@@ -1,5 +1,5 @@
 import {
-  IsDate,
+  IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -24,7 +24,7 @@ export class CreateUserDto {
   name: string;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   dob: string;
 
   @IsOptional()

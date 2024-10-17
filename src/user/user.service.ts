@@ -12,6 +12,7 @@ import { PasswordService } from 'src/shared/services/password.service';
 import { plainToClass } from 'class-transformer';
 import { omit } from 'lodash';
 import { TokenService } from 'src/shared/services/token.service';
+import { Request } from 'express';
 @Injectable()
 export class UserService {
   constructor(
@@ -54,6 +55,21 @@ export class UserService {
           id,
         },
       });
+      return omit(result, 'password');
+    } catch (error) {
+      console.error('error', error);
+    }
+  }
+
+  async getDetailUserByToken(req: Request) {
+    const { sub: currentUserId } = this.tokenService.getDataFromToken(req);
+    try {
+      const result = await this.usersRepository.findOne({
+        where: {
+          id: currentUserId,
+        },
+      });
+      console.log('result', result);
       return omit(result, 'password');
     } catch (error) {
       console.error('error', error);
