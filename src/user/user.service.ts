@@ -32,7 +32,11 @@ export class UserService {
       console.error('error', error);
       if (error.code === DatabaseErrorCodes.UNIQUE_VIOLATION) {
         // Postgres unique violation error code
-        throw new ConflictException(error.detail);
+        const key = error.detail.match(/\((.*?)\)/)[1];
+        console.error(`Conflict on key: ${key}`);
+        throw new ConflictException(
+          `The ${key.toUpperCase()} you provided is already in use. Please choose a different ${key.toUpperCase()}.`,
+        );
       }
       throw error;
     }

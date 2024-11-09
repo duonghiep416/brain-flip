@@ -88,4 +88,8 @@ export class TokenService {
     const token = authHeader.split(' ')[1];
     return token;
   }
+
+  getRefreshToken(token: string) {
+    return token.split(' ')[1];
+  }
 }

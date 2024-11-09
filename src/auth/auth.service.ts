@@ -56,24 +56,23 @@ export class AuthService {
     };
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto, id: string) {
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
     const refreshToken = refreshTokenDto.refreshToken;
-    const decodedAccessToken =
-      this.tokenService.decodeRefreshToken(refreshToken);
-    const isTokenValid =
-      this.tokenService.verifyRefreshToken(refreshToken) &&
-      decodedAccessToken.sub === id;
-
-    if (!isTokenValid) {
-      throw new UnauthorizedException('Invalid token');
-    }
+    const isTokenValid = this.tokenService.verifyRefreshToken(refreshToken);
+    const decodedRefreshToken = this.tokenService.decodeRefreshToken(
+      this.tokenService.getRefreshToken(refreshToken),
+    );
+    console.log('isTokenValid', isTokenValid);
+    // if (!isTokenValid) {
+    //   throw new UnauthorizedException('Invalid token');
+    // }
     await this.blacklistTokenService.create({
       token: refreshToken,
       type: TokenType.REFRESH,
     });
     return {
-      accessToken: this.tokenService.generateAccessToken(decodedAccessToken),
-      refreshToken: this.tokenService.generateRefreshToken(decodedAccessToken),
+      accessToken: this.tokenService.generateAccessToken(decodedRefreshToken),
+      refreshToken: this.tokenService.generateRefreshToken(decodedRefreshToken),
     };
   }
 }
