@@ -18,6 +18,6 @@ async function bootstrap() {
     credentials: true, // Nếu bạn cần gửi cookie cùng với yêu cầu
     allowedHeaders: 'Content-Type, Authorization', // Các header cho phép
   });
-  await app.listen(3000);
+  await app.listen(3012);
 }
 bootstrap();

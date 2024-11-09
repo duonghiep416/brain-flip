@@ -57,7 +57,7 @@ export class AppModule {
       .exclude(
         'auth/login',
         'auth/register',
-        'auth/:id/refresh-token',
+        'auth/refresh',
         'auth/forgot-password',
         'auth/reset-password',
       )

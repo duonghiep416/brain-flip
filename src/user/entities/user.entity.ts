@@ -1,3 +1,4 @@
+import { PasswordResetToken } from 'src/auth/entities/password_reset_tokens.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { FlashcardBookmark } from 'src/flashcard_bookmark/entities/flashcard_bookmark.entity';
 import { FlashcardSet } from 'src/flashcard_set/entities/flashcard_set.entity';
@@ -49,4 +50,10 @@ export class User {
 
   @OneToMany(() => FlashcardSetPermission, (permission) => permission.user)
   permissions: FlashcardSetPermission[];
+
+  @OneToMany(
+    () => PasswordResetToken,
+    (passwordResetToken) => passwordResetToken.user,
+  )
+  password_reset_tokens: PasswordResetToken[];
 }
