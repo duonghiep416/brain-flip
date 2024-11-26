@@ -36,6 +36,18 @@ export class TokenService {
     };
   }
 
+  generateResetPasswordToken(user: User): { value: string; expiresIn: string } {
+    const payload = { email: user.email, sub: user.id };
+    return {
+      value: this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_RESET_PASSWORD_SECRET'),
+        expiresIn: this.configService.get(
+          'JWT_RESET_PASSWORD_SECRET_EXPIRES_IN',
+        ),
+      }),
+      expiresIn: this.configService.get('JWT_RESET_PASSWORD_SECRET_EXPIRES_IN'),
+    };
+  }
   // Verify Access Token với xử lý trả về false nếu hết hạn hoặc không hợp lệ
   verifyAccessToken(token: string): boolean {
     try {
@@ -55,6 +67,19 @@ export class TokenService {
     try {
       this.jwtService.verify(token, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
+      return true; // Token hợp lệ
+    } catch (error) {
+      console.error('error', error);
+      // Token không hợp lệ hoặc hết hạn
+      return false;
+    }
+  }
+
+  verifyResetPasswordToken(token: string): boolean {
+    try {
+      this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_RESET_PASSWORD_SECRET'),
       });
       return true; // Token hợp lệ
     } catch (error) {
