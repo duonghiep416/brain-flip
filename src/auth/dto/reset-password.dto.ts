@@ -1,7 +1,6 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsPassword } from 'src/common/validators/password.validators';
 
 export class ResetPasswordDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsPassword()
+  newPassword: string;
 }

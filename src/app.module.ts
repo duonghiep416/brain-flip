@@ -15,12 +15,36 @@ import { FlashcardSetModule } from './flashcard_set/flashcard_set.module';
 import { FlashcardModule } from './flashcard/flashcard.module';
 import { FlashcardBookmarkModule } from './flashcard_bookmark/flashcard_bookmark.module';
 import { FlashcardSetPermissionModule } from './flashcard_set_permission/flashcard_set_permission.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BlacklistToken]),
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    // MailerModule
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // false cho STARTTLS, true cho SSL
+        auth: {
+          user: 'duongduchiep032003@gmail.com', // Địa chỉ Gmail
+          pass: 'gcck daip pjiw gdnh', // Mật khẩu ứng dụng Gmail
+        },
+      },
+      defaults: {
+        from: '"No Reply" <noreply@example.com>', // Địa chỉ email gửi mặc định
+      },
+      template: {
+        dir: process.cwd() + '/src/templates/', // Thư mục chứa templates
+        adapter: new HandlebarsAdapter(), // Sử dụng Handlebars cho templates
+        options: {
+          strict: true,
+        },
+      },
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -60,6 +84,7 @@ export class AppModule {
         'auth/refresh',
         'auth/forgot-password',
         'auth/reset-password',
+        'auth/forgot-password/reset',
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }

@@ -13,6 +13,7 @@ import { plainToClass } from 'class-transformer';
 import { omit } from 'lodash';
 import { TokenService } from 'src/shared/services/token.service';
 import { Request } from 'express';
+
 @Injectable()
 export class UserService {
   constructor(

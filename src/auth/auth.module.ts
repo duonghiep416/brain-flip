@@ -10,6 +10,7 @@ import { UserService } from 'src/user/user.service';
 import { BlacklistToken } from 'src/blacklist_token/entities/blacklist_token.entity';
 import { BlacklistTokenService } from 'src/blacklist_token/blacklist_token.service';
 import { PasswordResetToken } from 'src/auth/entities/password_reset_tokens.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [
@@ -26,7 +27,13 @@ import { PasswordResetToken } from 'src/auth/entities/password_reset_tokens.enti
       }),
     }),
   ],
-  providers: [AuthService, TokenService, UserService, BlacklistTokenService],
+  providers: [
+    AuthService,
+    TokenService,
+    UserService,
+    BlacklistTokenService,
+    EmailService,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

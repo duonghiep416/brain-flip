@@ -99,11 +99,23 @@ export class TokenService {
     return this.jwtService.decode(token);
   }
 
-  getDataFromToken(req: Request) {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException();
-    const token = authHeader.split(' ')[1];
-    const data = this.decodeAccessToken(token);
+  decodeResetPasswordToken(token: string) {
+    return this.jwtService.decode(token);
+  }
+
+  getDataFromToken(req: Request, withoutAuthorized?: boolean, token?: string) {
+    let data;
+    if (!withoutAuthorized) {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) throw new UnauthorizedException();
+      const token = authHeader.split(' ')[1];
+      data = this.decodeAccessToken(token);
+    }
+
+    if (token && withoutAuthorized) {
+      data = this.decodeResetPasswordToken(token);
+    }
+
     return data;
   }
 
@@ -116,5 +128,32 @@ export class TokenService {
 
   getRefreshToken(token: string) {
     return token.split(' ')[1];
+  }
+
+  convertExpireToken(expireStr: string): string {
+    // Bảng ánh xạ từ ký tự sang chuỗi đầy đủ
+    const timeUnits: { [key: string]: string } = {
+      m: 'minute',
+      h: 'hour',
+      d: 'day',
+      s: 'second',
+      w: 'week',
+      y: 'year',
+    };
+
+    // Tách số và ký tự
+    const number = parseInt(expireStr.slice(0, -1)); // Lấy phần số
+    const unit = expireStr.slice(-1); // Lấy ký tự cuối (đơn vị)
+
+    // Kiểm tra nếu đơn vị hợp lệ
+    const fullUnit = timeUnits[unit];
+    if (!fullUnit) {
+      throw new Error(`Invalid time unit: ${unit}`);
+    }
+
+    // Thêm 's' nếu số lớn hơn 1
+    const plural = number > 1 ? 's' : '';
+
+    return `${number} ${fullUnit}${plural}`;
   }
 }
