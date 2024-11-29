@@ -36,6 +36,18 @@ export class TokenService {
     };
   }
 
+  generateResetPasswordToken(user: User): { value: string; expiresIn: string } {
+    const payload = { email: user.email, sub: user.id };
+    return {
+      value: this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_RESET_PASSWORD_SECRET'),
+        expiresIn: this.configService.get(
+          'JWT_RESET_PASSWORD_SECRET_EXPIRES_IN',
+        ),
+      }),
+      expiresIn: this.configService.get('JWT_RESET_PASSWORD_SECRET_EXPIRES_IN'),
+    };
+  }
   // Verify Access Token với xử lý trả về false nếu hết hạn hoặc không hợp lệ
   verifyAccessToken(token: string): boolean {
     try {
@@ -64,6 +76,19 @@ export class TokenService {
     }
   }
 
+  verifyResetPasswordToken(token: string): boolean {
+    try {
+      this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_RESET_PASSWORD_SECRET'),
+      });
+      return true; // Token hợp lệ
+    } catch (error) {
+      console.error('error', error);
+      // Token không hợp lệ hoặc hết hạn
+      return false;
+    }
+  }
+
   // Decode Access Token
   decodeAccessToken(token: string) {
     return this.jwtService.decode(token);
@@ -74,11 +99,23 @@ export class TokenService {
     return this.jwtService.decode(token);
   }
 
-  getDataFromToken(req: Request) {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException();
-    const token = authHeader.split(' ')[1];
-    const data = this.decodeAccessToken(token);
+  decodeResetPasswordToken(token: string) {
+    return this.jwtService.decode(token);
+  }
+
+  getDataFromToken(req: Request, withoutAuthorized?: boolean, token?: string) {
+    let data;
+    if (!withoutAuthorized) {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) throw new UnauthorizedException();
+      const token = authHeader.split(' ')[1];
+      data = this.decodeAccessToken(token);
+    }
+
+    if (token && withoutAuthorized) {
+      data = this.decodeResetPasswordToken(token);
+    }
+
     return data;
   }
 
@@ -91,5 +128,32 @@ export class TokenService {
 
   getRefreshToken(token: string) {
     return token.split(' ')[1];
+  }
+
+  convertExpireToken(expireStr: string): string {
+    // Bảng ánh xạ từ ký tự sang chuỗi đầy đủ
+    const timeUnits: { [key: string]: string } = {
+      m: 'minute',
+      h: 'hour',
+      d: 'day',
+      s: 'second',
+      w: 'week',
+      y: 'year',
+    };
+
+    // Tách số và ký tự
+    const number = parseInt(expireStr.slice(0, -1)); // Lấy phần số
+    const unit = expireStr.slice(-1); // Lấy ký tự cuối (đơn vị)
+
+    // Kiểm tra nếu đơn vị hợp lệ
+    const fullUnit = timeUnits[unit];
+    if (!fullUnit) {
+      throw new Error(`Invalid time unit: ${unit}`);
+    }
+
+    // Thêm 's' nếu số lớn hơn 1
+    const plural = number > 1 ? 's' : '';
+
+    return `${number} ${fullUnit}${plural}`;
   }
 }
