@@ -25,26 +25,29 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
       isGlobal: true,
     }),
     // MailerModule
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // false cho STARTTLS, true cho SSL
-        auth: {
-          user: 'duongduchiep032003@gmail.com', // Địa chỉ Gmail
-          pass: 'gcck daip pjiw gdnh', // Mật khẩu ứng dụng Gmail
+    MailerModule.forRootAsync({
+      useFactory: async (config: ConfigService) => ({
+        transport: {
+          host: config.get('MAIL_HOST'),
+          port: config.get('MAIL_PORT'),
+          secure: false, // false cho STARTTLS, true cho SSL
+          auth: {
+            user: config.get('MAIL_USER'), // Địa chỉ Gmail
+            pass: config.get('MAIL_PASSWORD'), // Mật khẩu ứng dụng Gmail
+          },
         },
-      },
-      defaults: {
-        from: '"No Reply" <noreply@example.com>', // Địa chỉ email gửi mặc định
-      },
-      template: {
-        dir: process.cwd() + '/src/templates/', // Thư mục chứa templates
-        adapter: new HandlebarsAdapter(), // Sử dụng Handlebars cho templates
-        options: {
-          strict: true,
+        defaults: {
+          from: `No Reply <${config.get('MAIL_USER')}>`, // Địa chỉ email gửi mặc định
         },
-      },
+        template: {
+          dir: process.cwd() + '/src/templates/', // Thư mục chứa templates
+          adapter: new HandlebarsAdapter(), // Sử dụng Handlebars cho templates
+          options: {
+            strict: true,
+          },
+        },
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
