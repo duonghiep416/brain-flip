@@ -74,7 +74,6 @@ export class UserService {
           id: currentUserId,
         },
       });
-      console.log('result', result);
       return omit(result, 'password');
     } catch (error) {
       console.error('error', error);

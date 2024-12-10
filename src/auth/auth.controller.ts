@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { LoginDto } from 'src/auth/dto/login.dto';
+import { LogoutDto } from 'src/auth/dto/logout.dto';
 import { RefreshTokenDto } from 'src/auth/dto/refresh-token.dto';
 import { RequestResetPasswordDto } from 'src/auth/dto/request-reset-password.dto';
 import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
@@ -23,6 +24,11 @@ export class AuthController {
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('logout')
+  logout(@Body() logoutDto: LogoutDto, @Req() req: Request) {
+    return this.authService.logout(req, logoutDto);
   }
 
   @Post('refresh')
