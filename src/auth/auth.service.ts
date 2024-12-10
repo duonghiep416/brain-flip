@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   Req,
   UnauthorizedException,
@@ -21,6 +22,7 @@ import { Repository } from 'typeorm';
 import { Request } from 'express';
 import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
 import { omit } from 'lodash';
+import { LogoutDto } from 'src/auth/dto/logout.dto';
 
 @Injectable()
 export class AuthService {
@@ -86,13 +88,13 @@ export class AuthService {
 
     // Verify the refresh token's validity
     const isTokenValid = this.tokenService.verifyRefreshToken(refreshToken);
-
+    if (!isTokenValid) {
+      throw new UnauthorizedException();
+    }
     // Decode the refresh token
     const decodedRefreshToken = this.tokenService.decodeRefreshToken(
       this.tokenService.getRefreshToken(refreshToken),
     );
-
-    console.log('isTokenValid', isTokenValid);
 
     // Add the old refresh token to the blacklist
     await this.blacklistTokenService.create({
@@ -144,7 +146,6 @@ export class AuthService {
       // const resetPasswordUrl = `${baseUrl}/auth/forgot-password/reset?reset_token=${resetPasswordToken.value}`;
       const clientURL = this.configService.get('CLIENT_URL');
       const resetPasswordUrl = `${clientURL}/forgot-password/reset?reset_token=${resetPasswordToken.value}`;
-      console.log('resetPasswordUrl', resetPasswordUrl);
       // Send reset password email
       await this.emailService.sendEmail(
         email,
@@ -221,5 +222,34 @@ export class AuthService {
     if (blacklistToken || !this.tokenService.verifyAccessToken(token)) {
       throw new UnauthorizedException();
     }
+  }
+
+  async logout(req: Request, logoutDto: LogoutDto) {
+    const { refreshToken } = logoutDto;
+    const token = this.tokenService.getAccessToken(req);
+
+    if (!token) {
+      throw new UnauthorizedException('Access token is missing');
+    }
+
+    try {
+      // Blacklist the access token to prevent further use
+      await this.blacklistTokenRepository.save({
+        token: token,
+        type: TokenType.ACCESS,
+      });
+
+      if (refreshToken) {
+        await this.blacklistTokenRepository.save({
+          token: refreshToken,
+          type: TokenType.REFRESH,
+        });
+      }
+    } catch (error) {
+      console.error('Error blacklisting tokens:', error);
+      throw new InternalServerErrorException('Failed to blacklist tokens');
+    }
+
+    return { message: 'Logged out successfully' };
   }
 }
