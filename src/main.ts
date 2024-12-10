@@ -13,7 +13,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: '*', // Thay đổi URL này theo yêu cầu của bạn
+    origin: 'http://localhost:3015', // Thay đổi URL này theo yêu cầu của bạn
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Nếu bạn cần gửi cookie cùng với yêu cầu
     allowedHeaders: 'Content-Type, Authorization', // Các header cho phép
