@@ -16,12 +16,6 @@ export class FlashcardSetPermission {
   id: string;
 
   @Column()
-  user_id: string;
-
-  @Column()
-  flashcard_set_id: string;
-
-  @Column()
   permission_type: number;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
