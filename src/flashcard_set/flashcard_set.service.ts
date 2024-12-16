@@ -46,15 +46,8 @@ export class FlashcardSetService {
       const flashcardSet = this.flashcardSetRepository.create({
         title: createFlashcardSetDto.title,
         description: createFlashcardSetDto?.description || '',
-        password: createFlashcardSetDto?.password || null,
-        is_private: createFlashcardSetDto?.is_private ?? false,
         user: userEntity,
       });
-      if (flashcardSet.password) {
-        flashcardSet.password = await PasswordService.hashPassword(
-          flashcardSet.password,
-        );
-      }
 
       const savedFlashcardSet =
         await this.flashcardSetRepository.save(flashcardSet);
@@ -181,7 +174,7 @@ export class FlashcardSetService {
         return new NotFoundException('Not Found');
       }
 
-      if (currentUserId !== flashcardSet.user.id && flashcardSet.is_private) {
+      if (currentUserId !== flashcardSet.user.id) {
         return new ForbiddenException(
           'You do not have permission to view this flashcard set',
         );
@@ -196,10 +189,6 @@ export class FlashcardSetService {
 
       // Cập nhật flashcardSet với flashcards mới đã xử lý
       _.set(flashcardSet, 'flashcards', updatedFlashcards);
-
-      // Xử lý nếu flashcard set có mật khẩu
-      _.set(flashcardSet, 'password', flashcardSet?.password ? true : false);
-
       return _.omit(flashcardSet, ['user']);
     } catch (error) {
       console.error('error', error);
