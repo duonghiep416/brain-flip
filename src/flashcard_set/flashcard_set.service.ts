@@ -312,12 +312,12 @@ export class FlashcardSetService {
       });
 
       if (!flashcardSet) {
-        return new NotFoundException('Flashcard set not found');
+        throw new NotFoundException('Flashcard set not found');
       }
 
       // Ensure the current user has permission to update the role
       if (flashcardSet.user.id !== currentUserId) {
-        return new ForbiddenException(
+        throw new ForbiddenException(
           'You do not have permission to update this flashcard set role',
         );
       }
@@ -326,16 +326,17 @@ export class FlashcardSetService {
       let flashcardSetRole =
         await this.flashcardSetPermissionRepository.findOne({
           where: {
-            flashcard_set_id: id,
-            user_id: updateFlashcardSetRoleDto.user_id,
+            user: { id: updateFlashcardSetRoleDto.user_id },
+            flashcard_set: { id },
           },
+          relations: ['user', 'flashcard_set'],
         });
 
       if (!flashcardSetRole) {
         // If the role does not exist, create a new permission
         flashcardSetRole = this.flashcardSetPermissionRepository.create({
-          user_id: updateFlashcardSetRoleDto.user_id,
-          flashcard_set_id: id,
+          user: { id: updateFlashcardSetRoleDto.user_id } as User,
+          flashcard_set: { id } as FlashcardSet,
           permission_type: updateFlashcardSetRoleDto.role,
         });
       } else {

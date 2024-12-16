@@ -1,4 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { MemoryMode } from 'src/common/enums/memory-mode.enum';
 import { Flashcard } from 'src/flashcard/entities/flashcard.entity';
 import { FlashcardSetPermission } from 'src/flashcard_set_permission/entities/flashcard_set_permission.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -33,6 +34,9 @@ export class FlashcardSet {
   @Column()
   @IsBoolean()
   is_private: boolean;
+
+  @Column({ default: MemoryMode.AUTOMATIC })
+  memory_mode: number;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
